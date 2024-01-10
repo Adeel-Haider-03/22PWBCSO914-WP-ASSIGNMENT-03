@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Frontend</title>
+    <style>
+        /* Example CSS styles - customize based on your design preferences */
+body {
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+section {
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+label {
+    margin-bottom: 5px;
+}
+
+button {
+    background-color: #333;
+    color: #fff;
+    padding: 8px;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+textarea, input {
+    margin-bottom: 10px;
+    padding: 8px;
+}
+
+#receiptContainer {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>User</h1>
+    </header>
+
+    <main>
+        <section id="authSection">
+            <h2>User Registration</h2>
+            <form id="registrationForm">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+
+                <button type="button" onclick="registerUser()">Register</button>
+            </form>
+
+            <h2>User Login</h2>
+            <form id="loginForm">
+                <label for="loginEmail">Email:</label>
+                <input type="email" id="loginEmail" name="loginEmail" required>
+
+                <label for="loginPassword">Password:</label>
+                <input type="password" id="loginPassword" name="loginPassword" required>
+
+                <button type="button" onclick="loginUser()">Login</button>
+            </form>
+        </section>
+
+        <section id="userSection" style="display: none;">
+            <h2>User Details</h2>
+            <div id="userDetails"></div>
+
+            <h2>Manage Cart</h2>
+            <form id="cartForm">
+                <label for="productName">Name:</label>
+                <input type="text" id="productName" name="productName" required>
+
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" required>
+
+                <button type="button" onclick="addToCart()">Add to Cart</button>
+            </form>
+
+            <h2>Proceed to Checkout</h2>
+            <form id="checkoutForm">
+                <label for="shippingDetails">Shipping Details:</label>
+                <textarea id="shippingDetails" name="shippingDetails" required></textarea>
+
+                <label for="paymentMethod">Payment Method:</label>
+                <select id="paymentMethod" name="paymentMethod" required>
+                    <option value="cash-on-delivery">Cash on Delivery</option>
+                    <option value="debit-credit-card">Debit/Credit Card</option>
+                </select>
+
+                <button type="button" onclick="checkout()">Checkout</button>
+            </form>
+            <div id="receiptContainer">
+
+            </div>
+            <h2>View Order History</h2>
+            <div id="orderHistory"></div>
+
+            <h2>Manage Account Details</h2>
+            <form id="accountForm">
+                <label for="updatedUsername">Updated Username:</label>
+                <input type="text" id="updatedUsername" name="updatedUsername" required>
+
+                <button type="button" onclick="updateAccount()">Update Account</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        async function registerUser() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/users/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, email, password }),
+                });
+
+                if (response.ok) {
+                    alert('User registered successfully!');
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('userSection').style.display = 'block';
+                    fetchUserDetails();
+                } else {
+                    const errorMessage = await response.text();
+                    alert(`User registration failed: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('User registration error:', error.message);
+                alert('An error occurred during user registration.');
+            }
+        }
+
+        async function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                if (response.ok) {
+                    alert('User logged in successfully!');
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('userSection').style.display = 'block';
+                    fetchUserDetails();
+                } else {
+                    const errorMessage = await response.text();
+                    alert(`User login failed: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('User login error:', error.message);
+                alert('An error occurred during user login.');
+            }
+        }
+
+        async function fetchUserDetails() {
+            try {
+                const response = await fetch('http://localhost:5000/api/users/659e4f92f8bf99181a72afdc');
+                const user = await response.json();
+
+                const userDetails = document.getElementById('userDetails');
+                userDetails.innerHTML = `<strong>Username:</strong> ${user.username}<br><strong>Email:</strong> ${user.email}`;
+            } catch (error) {
+                console.error('Error fetching user details:', error.message);
+                alert('An error occurred while fetching user details.');
+            }
+        }
+
+        async function addToCart() {
+    const productName = document.getElementById('productName').value;
+    const quantity = document.getElementById('quantity').value;
+
+    try {
+        const response = await fetch('http://localhost:5000/api/users/659e4f92f8bf99181a72afdc/cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productName, quantity }),
+        });
+
+        if (response.ok) {
+            alert('Product added to the cart successfully!');
+        } else {
+            const errorMessage = await response.text();
+            alert(`Failed to add product to the cart: ${errorMessage}`);
+        }
+    } catch (error) {
+        console.error('Error adding product to the cart:', error.message);
+        alert('An error occurred while adding the product to the cart.');
+    }
+}
+
+
+async function checkout() {
+  const shippingDetails = document.getElementById('shippingDetails').value;
+  const paymentMethod = document.getElementById('paymentMethod').value;
+
+  try {
+    const response = await fetch('http://localhost:5000/api/users/659e4f92f8bf99181a72afdc/checkout', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ shippingDetails, paymentMethod }),
+});
+
+if (response.ok) {
+  const { paymentReceipt, orderId } = await response.json();
+
+  if (orderId) {
+    alert('Checkout successful!');
+
+    // Fetch payment receipt using the obtained orderId
+    const userId = '659e4f92f8bf99181a72afdc';
+
+    const receiptResponse = await fetch(`http://localhost:5000/api/users/${userId}/checkout/receipt?orderId=${orderId}`);
+
+    if (receiptResponse.ok) {
+      const receiptData = await receiptResponse.json();
+      displayReceipt(receiptData);
+    } else {
+      const errorMessage = await receiptResponse.text();
+      alert(`Failed to fetch payment receipt: ${errorMessage}`);
+    }
+  } else {
+    alert('Order ID is not defined in the response. Unable to fetch receipt.');
+  }
+} else {
+  const errorMessage = await response.text();
+  alert(`Checkout failed: ${errorMessage}`);
+}
+
+  } catch (error) {
+    console.error('Error during checkout:', error.message);
+    alert('An error occurred during the checkout process.');
+  }
+}
+
+
+function displayReceipt(receiptData) {
+  const receiptContainer = document.getElementById('receiptContainer');
+
+  // Assuming receiptContainer is an HTML element where you want to display the receipt
+  receiptContainer.innerHTML = `
+    <h2>Payment Receipt</h2>
+    <p>Order ID: ${receiptData.paymentReceipt.orderId}</p>
+    <p>Amount: $${receiptData.paymentReceipt.amount.toFixed(2)}</p>
+    <p>Payment Method: ${receiptData.paymentReceipt.paymentMethod}</p>
+    <p>Timestamp: ${new Date(receiptData.paymentReceipt.timestamp).toLocaleString()}</p>
+    <!-- Add other receipt details as needed -->
+  `;
+}
+
+
+
+        async function fetchOrderHistory() {
+            try {
+                const response = await fetch('http://localhost:5000/api/users/659e4f92f8bf99181a72afdc/orders');
+                const orders = await response.json();
+
+                const orderHistory = document.getElementById('orderHistory');
+                orderHistory.innerHTML = '<strong>Order History:</strong><br>';
+
+                orders.forEach(order => {
+                    orderHistory.innerHTML += `<div>Order ID: ${order.orderId}, Amount: $${order.amount}, Date: ${order.timestamp}</div>`;
+                });
+            } catch (error) {
+                console.error('Error fetching order history:', error.message);
+                alert('An error occurred while fetching order history.');
+            }
+        }
+
+        async function updateAccount() {
+            const updatedUsername = document.getElementById('updatedUsername').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/users/659e4f92f8bf99181a72afdc/account', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username: updatedUsername }),
+                });
+
+                if (response.ok) {
+                    alert('Account details updated successfully!');
+                    fetchUserDetails(); // Refresh user details after update
+                } else {
+                    const errorMessage = await response.text();
+                    alert(`Failed to update account details: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Error updating account details:', error.message);
+                alert('An error occurred while updating account details.');
+            }
+        }
+
+        // Fetch user details and order history when the page loads
+        window.onload = async function () {
+            await fetchUserDetails();
+            await fetchOrderHistory();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+    
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+    
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    
+        h1, h2 {
+            color: #333;
+        }
+    
+        form {
+            display: grid;
+            gap: 10px;
+        }
+    
+        label {
+            font-weight: bold;
+        }
+    
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+    
+        button {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+    
+        #productList {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    
+        .product {
+            padding: 10px;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+    
+</head>
+<body>
+    <header>
+        <h1>Products</h1>
+    </header>
+
+    <main>
+        <section id="productSection">
+            <h2>View Products</h2>
+            <div id="productList"></div>
+
+            <h2>Add New Product</h2>
+            <form id="addProductForm">
+                <label for="productName">Name:</label>
+                <input type="text" id="productName" name="productName" required>
+
+                <label for="productDescription">Description:</label>
+                <textarea id="productDescription" name="productDescription" required></textarea>
+
+                <label for="productPrice">Price:</label>
+                <input type="number" id="productPrice" name="productPrice" required>
+
+                <button type="button" onclick="addProduct()">Add Product</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        async function fetchProducts() {
+            try {
+                const response = await fetch('http://localhost:5000/api/products');
+                const products = await response.json();
+
+                const productList = document.getElementById('productList');
+                productList.innerHTML = '';
+
+                products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.classList.add('product');
+                    productDiv.innerHTML = `
+                        <strong>${product.name}</strong> - $${product.price}
+                    `;
+                    productList.appendChild(productDiv);
+                });
+            } catch (error) {
+                console.error('Error fetching products:', error.message);
+                alert('An error occurred while fetching products.');
+            }
+        }
+
+        async function addProduct() {
+            const productName = document.getElementById('productName').value;
+            const productDescription = document.getElementById('productDescription').value;
+            const productPrice = document.getElementById('productPrice').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: productName,
+                        description: productDescription,
+                        price: parseFloat(productPrice),
+                    }),
+                });
+
+                if (response.ok) {
+                    alert('Product added successfully!');
+                    fetchProducts(); // Refresh the product list after adding a new product
+                } else {
+                    const errorMessage = await response.text();
+                    alert(`Failed to add product: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Error adding product:', error.message);
+                alert('An error occurred while adding the product.');
+            }
+        }
+
+        // Fetch products when the page loads
+        window.onload = async function () {
+            await fetchProducts();
+        };
+    </script>
+</body>
+</html>

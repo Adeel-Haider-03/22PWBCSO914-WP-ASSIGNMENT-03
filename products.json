@@ -1,0 +1,12 @@
+[
+  { "id": 1, "name": "Red Dead Redemption 2", "price": 39.99 },
+  { "id": 2, "name": "Spider-Man: Miles Morales", "price": 49.99 },
+  { "id": 3, "name": "Minecraft", "price": 19.99 },
+  { "id": 4, "name": "Call of Duty: Warzone", "price": 45.99 },
+  { "id": 5, "name": "Among Us", "price": 4.99 },
+  { "id": 6, "name": "Overwatch", "price": 39.99 },
+  { "id": 7, "name": "Fortnite", "price": 34.99 },
+  { "id": 8, "name": "Apex Legends", "price": 79.99 },
+  { "id": 9, "name": "GTA V", "price": 29.99 },
+  { "id": 10, "name": "Example Game", "price": 59.99 }
+]

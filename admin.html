@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Admin Frontend</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        section {
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: grid;
+            grid-gap: 10px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        #adminDetails {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>E-commerce Admin Panel</h1>
+    </header>
+
+    <main>
+        <section id="authSection">
+            <h2>Admin Registration</h2>
+            <form id="adminRegistrationForm">
+                <label for="adminUsername">Username:</label>
+                <input type="text" id="adminUsername" name="adminUsername" required>
+
+                <label for="adminEmail">Email:</label>
+                <input type="email" id="adminEmail" name="adminEmail" required>
+
+                <label for="adminPassword">Password:</label>
+                <input type="password" id="adminPassword" name="adminPassword" required>
+
+                <button type="button" onclick="registerAdmin()">Register</button>
+            </form>
+
+            <h2>Admin Login</h2>
+            <form id="adminLoginForm">
+                <label for="loginAdminEmail">Email:</label>
+                <input type="email" id="loginAdminEmail" name="loginAdminEmail" required>
+
+                <label for="loginAdminPassword">Password:</label>
+                <input type="password" id="loginAdminPassword" name="loginAdminPassword" required>
+
+                <button type="button" onclick="loginAdmin()">Login</button>
+            </form>
+        </section>
+
+        <section id="adminSection" style="display: none;">
+            <h2>Admin Details</h2>
+            <div id="adminDetails"></div>
+
+            <h2>Admin Panel</h2>
+            <button type="button" onclick="accessAdminPanel()">Access Admin Panel</button>
+
+            <h2>Manage Products</h2>
+            <form id="productForm">
+                <label for="productName">Product Name:</label>
+                <input type="text" id="productName" name="productName" required>
+
+                <label for="productPrice">Product Price:</label>
+                <input type="number" id="productPrice" name="productPrice" required>
+
+                <button type="button" onclick="addProduct()">Add Product</button>
+            </form>
+
+            <h2>Update Product</h2>
+            <form id="updateProductForm">
+                <label for="updateProductId">Product ID:</label>
+                <input type="text" id="updateProductId" name="updateProductId" required>
+
+                <label for="updatedProductName">Updated Product Name:</label>
+                <input type="text" id="updatedProductName" name="updatedProductName" required>
+
+                <label for="updatedProductPrice">Updated Product Price:</label>
+                <input type="number" id="updatedProductPrice" name="updatedProductPrice" required>
+
+                <button type="button" onclick="updateProduct()">Update Product</button>
+            </form>
+
+            <h2>Delete Product</h2>
+            <form id="deleteProductForm">
+                <label for="deleteProductId">Product Name:</label>
+                <input type="text" id="deleteProductId" name="deleteProductId" required>
+
+                <button type="button" onclick="deleteProduct()">Delete Product</button>
+            </form>
+
+            <h2>View Sales Data</h2>
+            <button type="button" onclick="viewSalesData()">View Sales Data</button>
+        </section>
+    </main>
+
+    <script>
+        async function registerAdmin() {
+            const adminUsername = document.getElementById('adminUsername').value;
+            const adminEmail = document.getElementById('adminEmail').value;
+            const adminPassword = document.getElementById('adminPassword').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/admins/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username: adminUsername, email: adminEmail, password: adminPassword }),
+                });
+
+                if (response.ok) {
+                    alert('Admin registered successfully!');
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('adminSection').style.display = 'block';
+                    fetchAdminDetails();
+                } else {
+                    const errorMessage = await response.text();
+                    alert(`Admin registration failed: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Admin registration error:', error.message);
+                alert('An error occurred during admin registration.');
+            }
+        }
+
+        async function loginAdmin() {
+            const adminEmail = document.getElementById('loginAdminEmail').value;
+            const adminPassword = document.getElementById('loginAdminPassword').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/admins/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: adminEmail, password: adminPassword }),
+                });
+
+                if (response.ok) {
+                    alert('Admin logged in successfully!');
+                    document.getElementById('authSection').style.display = 'none';
+                    document.getElementById('adminSection').style.display = 'block';
+                    fetchAdminDetails();
+                } else {
+                    const errorMessage = await response.text();
+                    alert(`Admin login failed: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Admin login error:', error.message);
+                alert('An error occurred during admin login.');
+            }
+        }
+
+        async function fetchAdminDetails() {
+    try {
+      const response = await fetch('http://localhost:5000/api/admins/659e5cd44bcc1230f7722e8b'); // Replace ':adminId' with the actual admin ID
+      const admin = await response.json();
+
+      const adminDetails = document.getElementById('adminDetails');
+      adminDetails.innerHTML = `<strong>Admin Details:</strong><br>
+        Username: ${admin.username}<br>
+        Email: ${admin.email}<br>`;
+
+    } catch (error) {
+      console.error('Error fetching admin details:', error.message);
+      alert('An error occurred while fetching admin details.');
+    }
+  }
+
+  async function accessAdminPanel() {
+    try {
+      const response = await fetch('http://localhost:5000/api/admins/659e5cd44bcc1230f7722e8b/panel'); // Replace ':adminId' with the actual admin ID
+      const result = await response.json();
+      alert(result.message);
+    } catch (error) {
+      console.error('Error accessing admin panel:', error.message);
+      alert('An error occurred while accessing the admin panel.');
+    }
+  }
+
+  async function viewSalesData() {
+    try {
+      const response = await fetch('http://localhost:5000/api/admins/659e5cd44bcc1230f7722e8b/sales'); // Replace ':adminId' with the actual admin ID
+      const result = await response.json();
+      alert(result.message);
+    } catch (error) {
+      console.error('Error fetching sales data:', error.message);
+      alert('An error occurred while fetching sales data.');
+    }
+  }
+
+        async function addProduct() {
+            const productName = document.getElementById('productName').value;
+            const productPrice = document.getElementById('productPrice').value;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/admins/659e5cd44bcc1230f7722e8b/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: productName, price: productPrice }),
+                });
+
+                if (response.ok) {
+                    alert('Product added successfully!');
+                } else {
+                    const errorMessage = await response.text();
+                    alert(`Failed to add product: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Error adding product:', error.message);
+                alert('An error occurred while adding the product.');
+            }
+        }
+
+        async function updateProduct() {
+            const productId = document.getElementById('updateProductId').value;
+            const updatedProductName = document.getElementById('updatedProductName').value;
+            const updatedProductPrice = document.getElementById('updatedProductPrice').value;
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/admins/659e5cd44bcc1230f7722e8b/products/${productId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: updatedProductName, price: updatedProductPrice }),
+                });
+
+                if (response.ok) {
+                    alert('Product updated successfully!');
+                } else {
+                    const errorMessage = await response.text();
+                    alert(`Failed to update product: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.error('Error updating product:', error.message);
+                alert('An error occurred while updating the product.');
+            }
+        }
+
+        async function deleteProduct() {
+  const name = document.getElementById('deleteProductId').value;
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/admins/659e5cd44bcc1230f7722e8b/products/${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+    });
+
+    if (response.ok) {
+      alert('Product deleted successfully!');
+    } else {
+      const errorMessage = await response.text();
+      alert(`Failed to delete product: ${errorMessage}`);
+    }
+  } catch (error) {
+    console.error('Error deleting product:', error.message);
+    alert('An error occurred while deleting the product.');
+  }
+}
+
+    </script>
+</body>
+</html>
